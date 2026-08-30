@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, request, jsonify
 import requests
 
 app = Flask(__name__)
@@ -10,25 +10,25 @@ def proxy(path):
     vehicle = request.args.get('vehicle')
 
     if not key or not vehicle:
-        return {"error": "Missing key or vehicle parameter"}, 400
+        return jsonify({"error": "Missing key or vehicle parameter"}), 400
 
     if key != "FREE2DAY":
-        return {"error": "Invalid API Key"}, 401
+        return jsonify({"error": "Invalid API Key"}), 401
 
     try:
         target_url = f"https://vehicletonum.suryajasoos-4fe.workers.dev/?type=vehicle_num&term={vehicle}"
         resp = requests.get(target_url)
         mobile_number = resp.text.strip()
 
-        formatted_output = f"""data fetched 
-query - {vehicle}
-mobile number - {mobile_number}
-developer - @coderpetro 
-expiry on - 09-01-2026"""
+        # JSON response format
+        data = {
+            "status": "success",
+            "query": vehicle,
+            "mobile_number": mobile_number,
+            "developer": "@coderpetro",
+            "expiry_on": "09-01-2026"
+        }
 
-        return Response(formatted_output, mimetype='text/plain; charset=utf-8')
+        return jsonify(data)
     except Exception as e:
-        return {"error": "Failed to fetch data or not found"}, 500
-
-if __name__ == '__main__':
-    app.run()
+        return jsonify({"error": "Failed to fetch data or not found"}), 500
