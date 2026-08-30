@@ -1,0 +1,33 @@
+from flask import Flask, request, Response
+import requests
+
+app = Flask(__name__)
+
+@app.route('/')
+def proxy():
+    key = request.args.get('key')
+    vehicle = request.args.get('vehicle')
+
+    if not key or not vehicle:
+        return {"error": "Missing key or vehicle parameter"}, 400
+
+    if key != "FREE2DAY":
+        return {"error": "Invalid API Key"}, 401
+
+    try:
+        target_url = f"https://vehicletonum.suryajasoos-4fe.workers.dev/?type=vehicle_num&term={vehicle}"
+        resp = requests.get(target_url)
+        mobile_number = resp.text.strip()
+
+        formatted_output = f"""data fetched 
+query - {vehicle}
+mobile number - {mobile_number}
+developer - @coderpetro 
+expiry on - 09-01-2026"""
+
+        return Response(formatted_output, mimetype='text/plain; charset=utf-8')
+    except Exception as e:
+        return {"error": "Failed to fetch data or not found"}, 500
+
+if __name__ == '__main__':
+    app.run()
